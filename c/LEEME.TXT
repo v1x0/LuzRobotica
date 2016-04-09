@@ -1,0 +1,9 @@
+Led RGB v0.0.1
+
+Autores: 
+	César González Pérez
+
+Programa que controla un led RGB
+
+Este programa se compila con la siguiente instruccion:
+gcc runRGB.c -lpthread -lm
