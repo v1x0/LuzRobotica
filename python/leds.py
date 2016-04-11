@@ -1,31 +1,86 @@
-import time
-import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11, GPIO.OUT)
-GPIO.setup(13, GPIO.OUT)
-GPIO.setup(15, GPIO.OUT)
-
-p = GPIO.PWM(11, 50)  # channel=12 frequency=50Hz
-p1 = GPIO.PWM(13, 50)  # channel=12 frequency=50Hz
-p2 = GPIO.PWM(15, 30)  # channel=12 frequency=50Hz
-p.start(0)
-p1.start(0)
-p2.start(0)
+#!/bin/python
 try:
-    while 1:
-        for dc in range(0, 101, 5):
-            p.ChangeDutyCycle(dc)
-            p1.ChangeDutyCycle(dc)
-            p2.ChangeDutyCycle(dc)
-            time.sleep(0.1)
-        for dc in range(100, -1, -5):
-            p.ChangeDutyCycle(dc)
-            p1.ChangeDutyCycle(dc)
-            p2.ChangeDutyCycle(dc)
-            time.sleep(0.1)
+	#librerias
+	import threading
+	import time
+	import RPi.GPIO as GPIO
+
+	#Definir la lista pwm de pinout
+	lista_pout_pwm = {0:11,1:13,2:15,3:19,4:21}
+
+	#Definir la lista frecuencia de pinout
+	lista_pout_frec = {0:50,1:50,2:50,3:50,4:50}
+
+	#Definir lista PWM
+	lista_pwm = []
+	
+	#Definir el duty inicial
+	ini_duty = 0
+	
+	#Definir bandera de paro de hilo
+	continuar = 1
+	
+	#Definir retardo servos
+	retardo_servo = 2
+	
+	#Definir retardo led
+	retardo_led = 0.1
+	
+	#inicia la configuracion del sistema
+	def configuracion():
+		GPIO.setmode(GPIO.BOARD)
+		GPIO.setwarnings(False)
+		for indice in lista_pout_pwm:
+			GPIO.setup(lista_pout_pwm[indice], GPIO.OUT)
+			lista_pwm.insert(indice,GPIO.PWM(lista_pout_pwm[indice], lista_pout_frec[indice]))
+			lista_pwm[indice].start(ini_duty)
+	
+	#Definir movimientos del servo
+	def accion_servo(hilo):
+		j = hilo + 1
+		while continuar:
+			lista_pwm[hilo].ChangeDutyCycle(12)
+			time.sleep(retardo_servo)
+			lista_pwm[j].ChangeDutyCycle(12)
+			time.sleep(retardo_servo)
+			lista_pwm[hilo].ChangeDutyCycle(1)
+			time.sleep(retardo_servo)
+			lista_pwm[j].ChangeDutyCycle(1)
+			time.sleep(retardo_servo)
+		
+	#Definir brillo del led
+	def accion_led(hilo):
+		i = hilo + 1
+		k = i + 1
+		l = k + 1
+		while continuar:
+			for dc in range(0, 105, 5):
+				lista_pwm[i].ChangeDutyCycle(dc)
+				lista_pwm[k].ChangeDutyCycle(dc)
+				lista_pwm[l].ChangeDutyCycle(dc)
+				time.sleep(retardo_led)
+			for dc in range(100, -5, -5):
+				lista_pwm[i].ChangeDutyCycle(dc)
+				lista_pwm[k].ChangeDutyCycle(dc)
+				lista_pwm[l].ChangeDutyCycle(dc)
+				time.sleep(retardo_led)
+	
+	#Definir lista de acciones
+	lista_acciones =  {0:accion_servo, 1:accion_led}
+	
+	#Definir lista de hilos pwm
+	lista_hilos_acciones = []
+	
+	
+	#Inica el programa
+	configuracion()
+	for hilo in lista_acciones:
+		lista_hilos_acciones.insert(hilo, threading.Thread(target=lista_acciones[hilo], args=(hilo, )))
+		lista_hilos_acciones[hilo].start()
+		
+
 except KeyboardInterrupt:
-    pass
-p.stop()
-p1.stop()
-p2.stop()
-GPIO.cleanup()
+	continuar = 0
+	for pwm in lista_pwm:
+		pwm.stop()
+	GPIO.cleanup()
