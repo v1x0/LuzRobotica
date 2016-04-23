@@ -1,3 +1,4 @@
+//Añadir Licencia
 /*
 *Este programa se compila con la siguiente instruccion
 *gcc prog.c -lpthread -lm
