@@ -1,3 +1,4 @@
+#Encabezado de licencia
 #!/bin/sh
 
 #llama los GPIO a usar
