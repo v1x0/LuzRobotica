@@ -1,3 +1,5 @@
+#Añadir Licencia
+
 #!/bin/sh
 
 #Definimos una funcion que terminara el script
