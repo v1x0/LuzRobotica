@@ -1,7 +1,8 @@
+//A√±adir Licencia
 Led RGB v0.0.1
 
 Autores: 
-	CÈsar Gonz·lez PÈrez
+	C√©sar Gonz√°lez P√©rez
 
 Programa que controla un led RGB
 
