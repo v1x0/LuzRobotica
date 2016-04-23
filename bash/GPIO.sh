@@ -2,6 +2,7 @@
 
 #Definimos una funcion que terminara el script
 #en caso de error
+#tal vez esta función esta de más.
 function salir
 {
 	exit 0
