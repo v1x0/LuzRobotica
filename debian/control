@@ -1,10 +1,9 @@
-Package: leds
-Version: 1.0
+Package: led
 Architecture: all
 Maintainer: Grupo Diplomado <david.proteco@gmail.com>
-Depends: python (>=2.0)
+Depends: python (>= 2.0)
 Priority: standard
 Multi-Arch: foreign
 Homepage: http://github.com/v1x0
-Build-Depends: debhelper (>=9)
+Build-Depends: debhelper (>= 9)
 Description: Programa para mover un servo de leds
