@@ -1,86 +1,76 @@
 #!/bin/python
+# -*- coding: utf-8 -*-
+#****************************************************************************************
+#  Derechos de autor (c) 2016 
+#  Autores: 	Cesar Israel Gonzalez Perez	(kaetzer)
+#				Jose Abel Ochoa Ortiz		(sibik)
+#				David				(v1x0)
+#				Alberto				(alberto)
+#
+#  Se concede permiso, de forma gratuita y sin garantia, a cualquier persona que obtenga
+#  una copia de este software y archivos de documentación asociados (el
+#  "Software"), para trabajar con el Software sin restricciones, incluidos
+#  sin limitación, los derechos para usar, copiar, modificar, fusionar, publicar,
+#  distribuir, sublicenciar y / o vender copias del Software.
+#  
+#  Programa para controlar una luz robotica RBG con Raspberry Pi B+
+#  Usando las salidas GPIO emulando PWM por software para 
+#  controlar la intensidad de cada color y generar las mezclas.
+#  Asi tambien para posicionar dos servomotores y obteber los 
+#  movimientos Pan y Tilt.
+#    
+#  Materiales:
+#  1 RaspberryPi B+
+#  1 LED RGB 3w
+#  2 Servomotores 3001HB
+#  cables de conexion
+#  
+#
+#  Fecha: Lun 25 Abril 2016		
+#****************************************************************************************
 try:
-	#librerias
 	import threading
 	import time
 	import RPi.GPIO as GPIO
+	import sys
+	sys.path.append('/usr/local/etc/luzrobotica')
+	import configuracion
+	import servo
+	import rgb
 
-	#Definir la lista pwm de pinout
+	#Definicion de los parametros iniciales
+	#lista_pout_pwm definira las pines de salida para la salida del pwm
+	#lista_pout_frec define la frecuencia a la que va trabajar cada pwm
+	#lista_pwm almacena los pwm creados en el programa
+	#ini_duty define donde comenzara a operar el servomotor
+	#continuar variable que se usara para el ciclo de los hilos
+	#lista_acciones contiene los metodos que define la secuencia del servomotor y led rgb
+	#lista_hilos_acciones almacena los hilos creados por los metodos que definen las acciones del servomotor y ledrgb
 	lista_pout_pwm = {0:11,1:13,2:15,3:19,4:21}
 
-	#Definir la lista frecuencia de pinout
 	lista_pout_frec = {0:50,1:50,2:50,3:50,4:50}
 
-	#Definir lista PWM
 	lista_pwm = []
-	
-	#Definir el duty inicial
-	ini_duty = 0
-	
-	#Definir bandera de paro de hilo
-	continuar = 1
-	
-	#Definir retardo servos
-	retardo_servo = 2
-	
-	#Definir retardo led
-	retardo_led = 0.1
-	
-	#inicia la configuracion del sistema
-	def configuracion():
-		GPIO.setmode(GPIO.BOARD)
-		GPIO.setwarnings(False)
-		for indice in lista_pout_pwm:
-			GPIO.setup(lista_pout_pwm[indice], GPIO.OUT)
-			lista_pwm.insert(indice,GPIO.PWM(lista_pout_pwm[indice], lista_pout_frec[indice]))
-			lista_pwm[indice].start(ini_duty)
-	
-	#Definir movimientos del servo
-	def accion_servo(hilo):
-		j = hilo + 1
-		while continuar:
-			lista_pwm[hilo].ChangeDutyCycle(12)
-			time.sleep(retardo_servo)
-			lista_pwm[j].ChangeDutyCycle(12)
-			time.sleep(retardo_servo)
-			lista_pwm[hilo].ChangeDutyCycle(1)
-			time.sleep(retardo_servo)
-			lista_pwm[j].ChangeDutyCycle(1)
-			time.sleep(retardo_servo)
 		
-	#Definir brillo del led
-	def accion_led(hilo):
-		i = hilo + 1
-		k = i + 1
-		l = k + 1
-		while continuar:
-			for dc in range(0, 105, 5):
-				lista_pwm[i].ChangeDutyCycle(dc)
-				lista_pwm[k].ChangeDutyCycle(dc)
-				lista_pwm[l].ChangeDutyCycle(dc)
-				time.sleep(retardo_led)
-			for dc in range(100, -5, -5):
-				lista_pwm[i].ChangeDutyCycle(dc)
-				lista_pwm[k].ChangeDutyCycle(dc)
-				lista_pwm[l].ChangeDutyCycle(dc)
-				time.sleep(retardo_led)
-	
-	#Definir lista de acciones
-	lista_acciones =  {0:accion_servo, 1:accion_led}
-	
-	#Definir lista de hilos pwm
+	ini_duty = 0
+		
+	continuar = 1
+		
+	lista_acciones =  {0:servo.ini_accion, 1:rgb.ini_accion}
+		
 	lista_hilos_acciones = []
 	
-	
-	#Inica el programa
-	configuracion()
+	#Se inicializa la parte principal del programa a ejecutar
+	configuracion.ini_con(GPIO,lista_pout_pwm,lista_pwm,lista_pout_frec, ini_duty)
 	for hilo in lista_acciones:
-		lista_hilos_acciones.insert(hilo, threading.Thread(target=lista_acciones[hilo], args=(hilo, )))
+		lista_hilos_acciones.insert(hilo, threading.Thread(target=lista_acciones[hilo], args=(hilo, continuar, lista_pwm, time,  )))
 		lista_hilos_acciones[hilo].start()
 		
-
 except KeyboardInterrupt:
 	continuar = 0
+	file = open("error.log","a")
+	file.write("Error al ejecutar el programa ...")
+	file.close()
 	for pwm in lista_pwm:
 		pwm.stop()
 	GPIO.cleanup()
