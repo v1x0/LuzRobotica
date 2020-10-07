@@ -5,25 +5,25 @@ try:
 	import time
 	import RPi.GPIO as GPIO
 
-	#Definir la lista pwm de pinout
+	#Definir la lista pwm de pinout <=Podria omitirse
 	lista_pout_pwm = {0:11,1:13,2:15,3:19,4:21}
 
-	#Definir la lista frecuencia de pinout
+	#Definir la lista frecuencia de pinout <=Podria omitirse
 	lista_pout_frec = {0:50,1:50,2:50,3:50,4:50}
 
-	#Definir lista PWM
+	#Definir lista PWM <=Podria omitirse
 	lista_pwm = []
 	
-	#Definir el duty inicial
+	#Definir el duty inicial 
 	ini_duty = 0
 	
 	#Definir bandera de paro de hilo
 	continuar = 1
 	
-	#Definir retardo servos
+	#Definir retardo servos <=Podria omitirse
 	retardo_servo = 2
 	
-	#Definir retardo led
+	#Definir retardo led <=Podria omitirse
 	retardo_led = 0.1
 	
 	#inicia la configuracion del sistema
@@ -65,14 +65,12 @@ try:
 				lista_pwm[l].ChangeDutyCycle(dc)
 				time.sleep(retardo_led)
 	
-	#Definir lista de acciones
+	#Definir lista de acciones <=Podria omitirse
 	lista_acciones =  {0:accion_servo, 1:accion_led}
 	
-	#Definir lista de hilos pwm
+	#Definir lista de hilos pwm <=Podria omitirse
 	lista_hilos_acciones = []
 	
-	
-	#Inica el programa
 	configuracion()
 	for hilo in lista_acciones:
 		lista_hilos_acciones.insert(hilo, threading.Thread(target=lista_acciones[hilo], args=(hilo, )))
